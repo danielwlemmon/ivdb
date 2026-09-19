@@ -1,0 +1,6 @@
+symbol,cboe_symbol,kind,active,tier
+SPY,SPY,etf,1,active
+MU,MU,equity,1,active
+SPX,_SPX,index,1,active
+VIX,_VIX,index,1,active
+IBM,IBM,equity,1,surveillance

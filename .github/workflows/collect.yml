@@ -1,0 +1,98 @@
+name: collect
+
+# Code lives here (public, so Actions minutes are free). Data lives in a PRIVATE repo:
+# this job checks it out with a token, collects into it, and pushes the day's CSVs there.
+# Nothing collected is ever committed to this repo; only runs.csv (a run log with no
+# market data) is, which also keeps the schedule alive: GitHub disables cron workflows in
+# a public repo after 60 days without a commit.
+#
+# Required secret: IV_DATA_TOKEN = fine-grained PAT, Repository access: only the data repo,
+# Permissions: Contents read/write. Required variable: IV_DATA_REPO = owner/name.
+
+on:
+  schedule:
+    # 22:17 UTC Mon-Fri = 18:17 ET in summer, 17:17 ET in winter: always after the 16:00 ET close.
+    # Odd minute avoids the top-of-hour cron congestion that delays GitHub schedules.
+    - cron: "17 22 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: "Comma-separated subset (blank = all active tickers)"
+        default: ""
+      force:
+        description: "Collect even if closed / already collected today"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    # Forks inherit the schedule but not the secret; do not let them fail nightly.
+    if: github.repository_owner == 'danielwlemmon'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120  # ~158 active + ~784 surveillance take ~35 min at the paced rate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the private data repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.IV_DATA_REPO }}
+          token: ${{ secrets.IV_DATA_TOKEN }}
+          path: iv-data
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --frozen
+
+      - name: Collect
+        id: collect
+        env:
+          # Measured 2026-09-08 over 784 tail requests: 2.5s -> 2021s with zero rate-limit pauses;
+          # 1.5s -> 2546s with 31 pauses. Going faster is strictly slower, so do not lower this.
+          IVDB_CONCURRENCY: "2"
+          IVDB_MIN_INTERVAL: "2.5"
+          SYMBOLS: ${{ inputs.symbols }}
+          FORCE: ${{ inputs.force }}
+        run: |
+          ARGS=()
+          if [ -n "$SYMBOLS" ]; then ARGS+=(--symbols "$SYMBOLS"); fi
+          if [ "$FORCE" = "true" ]; then ARGS+=(--force); fi
+          uv run ivdb collect --data-dir iv-data/data --tickers iv-data/tickers.csv --runs-path runs.csv "${ARGS[@]}"
+        # A non-zero exit here fails the job and GitHub emails the repo owner.
+
+      - name: Push data to the private repo
+        if: steps.collect.outputs.market_status == 'ok'
+        working-directory: iv-data
+        run: |
+          git config user.name "ivdb-bot"
+          git config user.email "ivdb-bot@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "no data changes"; exit 0
+          fi
+          git commit -m "data: ${{ steps.collect.outputs.trade_date }} (${{ steps.collect.outputs.succeeded }}/${{ steps.collect.outputs.attempted }} ok)"
+          git pull --rebase
+          git push
+
+      - name: Record the run here
+        # ok, closed and fail all append a row; a skipped or too-early run does not.
+        if: always()
+        run: |
+          git config user.name "ivdb-bot"
+          git config user.email "ivdb-bot@users.noreply.github.com"
+          git add runs.csv 2>/dev/null || exit 0
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "runs: ${{ steps.collect.outputs.trade_date || 'n/a' }} ${{ steps.collect.outputs.market_status || 'error' }}"
+          git pull --rebase origin ${{ github.ref_name }}
+          git push origin HEAD:${{ github.ref_name }}

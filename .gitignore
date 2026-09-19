@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.env
+.DS_Store
+data/_scratch/
+# The data lives in a separate private repo; the workflow checks it out here.
+/iv-data/
+/data/
