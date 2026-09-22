@@ -10,3 +10,4 @@ run_ts_utc,trade_date,status,attempted,succeeded,surv_attempted,surv_succeeded,d
 2026-09-17T01:05:27+00:00,2026-09-16,ok,158,155,732,726,2225.7,2026-09-17 00:28:17,"failed: FDX(stale chain (last trade 2026-09-15)), INTU(stale chain (last trade 2026-09-15)), MTSI(stale chain (last trade 2026-09-15)); atm blank: LQD, XLV, XLP, XLRE, KRE, EFA, FXI; surveillance lagged (319); surveillance failed (6): NTRS, PRU, MCK, MPLX, PSA, MLI"
 2026-09-18T00:51:35+00:00,2026-09-17,ok,158,158,732,728,2225.9,2026-09-18 00:13:49,"atm blank: HYG, LQD, KRE; surveillance lagged (311); surveillance failed (4): MCK, MPLX, MLI, HACK"
 2026-09-19T13:39:23+00:00,2026-09-18,ok,3,3,0,0,8.3,2026-09-19 12:02:38,
+2026-09-22T01:28:57+00:00,2026-09-21,ok,158,157,732,732,2225.8,2026-09-22 00:25:32,"failed: MTSI(stale chain (last trade 2026-09-18)); atm blank: XLY, XLB, XLRE; surveillance lagged (169)"
