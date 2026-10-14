@@ -26,3 +26,4 @@ run_ts_utc,trade_date,status,attempted,succeeded,surv_attempted,surv_succeeded,d
 2026-10-09T02:49:22+00:00,2026-10-08,ok,173,173,723,719,2241.3,2026-10-09 02:11:45,"atm blank: LQD, XLV, XLP, XLB, XLRE, FXI, TSLA; surveillance lagged (30); surveillance failed (4): QRVO, PTC, WBD, SHV"
 2026-10-10T02:23:18+00:00,2026-10-09,ok,173,173,723,719,2241.5,2026-10-10 01:45:15,"atm blank: XLI, XLY, XLB, EFA; surveillance lagged (78); surveillance failed (4): QRVO, PTC, WBD, SHV"
 2026-10-13T03:41:00+00:00,2026-10-12,ok,173,172,723,719,2242.5,2026-10-13 03:01:57,"failed: LMND(stale chain (last trade 2026-10-09)); atm blank: XLV, XLI, XLY, XLB, XLRE; surveillance lagged (54); surveillance failed (4): QRVO, PTC, WBD, SHV"
+2026-10-14T01:51:37+00:00,2026-10-13,ok,173,173,723,719,2241.2,2026-10-14 01:05:32,"atm blank: XLI, XLP, XLB, DE; surveillance lagged (43); surveillance failed (4): QRVO, PTC, WBD, SHV"
